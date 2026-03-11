@@ -32,10 +32,18 @@
                 margin: 0;
             }
 
-            .voucher-page {
+            .print-page {
                 page-break-after: always;
-                margin-bottom: 0 !important;
-                padding-top: 10mm;
+            }
+
+            .print-page:last-child {
+                page-break-after: auto;
+            }
+
+            .voucher-page {
+                page-break-inside: avoid;
+                margin-bottom: 15mm !important;
+                padding-top: 5mm;
                 /* Margine superiore in stampa */
             }
         }
@@ -75,17 +83,8 @@
                         {/* HEADER */}
                         <div className="flex">
                             {/* Logo */}
-                            <div className="w-[20%] border-r-[1.5px] border-b-[1.5px] border-black p-2 flex flex-col justify-center relative overflow-hidden h-[80px]">
-                                <div className="absolute top-1 left-2 flex items-end">
-                                    <div className="w-1 h-6 bg-[#6b2c2c] mr-[2px]"></div>
-                                    <div className="w-3 h-[10px] bg-[#6b2c2c] border-t-2 border-r-2 border-[#6b2c2c] rounded-tr-[4px] mr-[2px]"></div>
-                                    <div className="w-1 h-8 bg-[#6b2c2c] mr-[2px]"></div>
-                                    <div className="w-8 h-2 bg-pink-200 mb-1 ml-1 opacity-50"></div>
-                                </div>
-                                <div className="mt-4 z-10">
-                                    <div className="font-bold text-[#6b2c2c] text-[22px] leading-none tracking-tighter">MONARI</div>
-                                    <div className="font-light text-[#a39b9b] text-[13px] leading-none tracking-[0.2em] mt-[2px] border border-[#a39b9b] inline-block px-1">PALLETS</div>
-                                </div>
+                            <div className="w-[20%] border-r-[1.5px] border-b-[1.5px] border-black p-2 flex flex-col justify-center items-center relative overflow-hidden h-[80px]">
+                                <img src="./Logo.jpg" alt="Logo" className="max-h-full max-w-full object-contain" />
                             </div>
 
                             {/* Destinazione */}
@@ -174,6 +173,10 @@
                     const columns = line.split('\t');
 
                     if (columns[0]?.toLowerCase().includes('data consegna') || columns[1]?.toLowerCase().includes('codice')) return;
+                    
+                    const nonEmptyCols = columns.filter(col => col.trim() !== '');
+                    if (nonEmptyCols.length === 1 && nonEmptyCols[0].trim() === 'UDF+MARAZZI') return;
+
                     if (columns.length < 5) return;
 
                     let destinazione = columns[4]?.trim() || '';
@@ -244,7 +247,13 @@
                             </div>
 
                             <div className="print-container pb-12">
-                                {parsedData.map((data) => <Voucher key={data.id} data={data} />)}
+                                {Array.from({ length: Math.ceil(parsedData.length / 2) }).map((_, i) => (
+                                    <div key={i} className="print-page">
+                                        {parsedData.slice(i * 2, i * 2 + 2).map((data) => (
+                                            <Voucher key={data.id} data={data} />
+                                        ))}
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}
