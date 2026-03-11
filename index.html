@@ -73,8 +73,8 @@
         const PrinterIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect width="12" height="8" x="6" y="14" /></svg>;
 
         function Voucher({ data }) {
-            // 10 righe vuote per la tabella (la prima conterrà la descrizione)
-            const rows = Array.from({ length: 10 });
+            // 9 righe vuote per la tabella (la prima conterrà la descrizione)
+            const rows = Array.from({ length: 9 });
 
             return (
                 <div className="voucher-page w-full max-w-[1000px] mx-auto bg-white mb-6 font-sans text-black">
@@ -131,7 +131,11 @@
                         <table className="w-full text-[15px]" style={{ borderCollapse: 'collapse' }}>
                             <tbody>
                                 <tr>
-                                    <td className="border-t-[1.5px] border-r-[1.5px] border-b-[1.5px] border-black w-[8%] p-1 text-center h-[30px]">NR. DDT</td>
+                                    <td className="border-t-[1.5px] border-r-[1.5px] border-b-[1.5px] border-black w-[8%] p-1 text-center h-[28px] text-[13px]">NOTE</td>
+                                    <td className="border-t-[1.5px] border-b-[1.5px] border-black p-1 px-2 text-[14px] font-bold uppercase" colSpan="4">{data.note}</td>
+                                </tr>
+                                <tr>
+                                    <td className="border-r-[1.5px] border-b-[1.5px] border-black w-[8%] p-1 text-center h-[30px]">NR. DDT</td>
                                     <td className="border-t-[1.5px] border-r-[1.5px] border-b-[1.5px] border-black w-[15%] p-1"></td>
                                     <td className="border-t-[1.5px] border-r-[1.5px] border-black w-[35%] p-1 text-center" style={{ borderBottom: 'none' }}>VETTORE</td>
                                     <td className="border-t-[1.5px] border-r-[1.5px] border-b-[1.5px] border-black w-[15%] p-1 text-center">CARRELLISTA</td>
@@ -168,11 +172,15 @@
 
                 const lines = inputText.split('\n').filter(line => line.trim() !== '');
                 const generatedData = [];
+                let noteIndex = -1;
 
                 lines.forEach((line, index) => {
                     const columns = line.split('\t');
 
-                    if (columns[0]?.toLowerCase().includes('data consegna') || columns[1]?.toLowerCase().includes('codice')) return;
+                    if (columns[0]?.toLowerCase().includes('data consegna') || columns[1]?.toLowerCase().includes('codice')) {
+                        noteIndex = columns.findIndex(col => col.toLowerCase().includes('particolarit'));
+                        return;
+                    }
 
                     // Salta riga se la colonna B (indice 1) è esattamente "UDC+MARAZZI"
                     if (columns[1]?.trim().toUpperCase() === 'UDC+MARAZZI') return;
@@ -185,7 +193,15 @@
                     const nrOrd = columns[3]?.trim() || '';
                     const descrizione = columns[1]?.trim() || '';
 
-                    generatedData.push({ id: index, destinazione, nrOrd, descrizione });
+                    let note = '';
+                    if (noteIndex !== -1 && columns[noteIndex]) {
+                        note = columns[noteIndex].trim();
+                    } else if (columns.length > 7 && noteIndex === -1) {
+                        // Se l'intestazione non è stata copiata, assumiamo che l'ultima colonna possa essere le note (se è oltre le 7 colonne base)
+                        note = columns[columns.length - 1].trim();
+                    }
+
+                    generatedData.push({ id: index, destinazione, nrOrd, descrizione, note });
                 });
 
                 if (generatedData.length === 0) {
@@ -209,7 +225,7 @@
 
                                 <p className="mb-4 text-gray-600">
                                     Incolla qui sotto le righe copiate dal tuo foglio Excel o gestionale.
-                                    <br /><span className="font-mono text-xs bg-gray-100 p-1 rounded mt-2 inline-block">DATA CONSEGNA | Codice Articolo | Ragione Sociale Cliente | Numero Documento | Citta Destinatario | Ragione Sociale Destinatario | Citta Cliente | ...</span>
+                                    <br /><span className="font-mono text-xs bg-gray-100 p-1 rounded mt-2 inline-block">DATA CONSEGNA | Codice Articolo | Ragione Sociale Cliente | Numero Documento | ... | Particolarità</span>
                                 </p>
 
                                 <textarea
