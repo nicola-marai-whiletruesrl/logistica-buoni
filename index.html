@@ -174,8 +174,8 @@
 
                     if (columns[0]?.toLowerCase().includes('data consegna') || columns[1]?.toLowerCase().includes('codice')) return;
 
-                    const nonEmptyCols = columns.filter(col => col.trim() !== '');
-                    if (nonEmptyCols.length === 1 && nonEmptyCols[0].trim() === 'UDC+MARAZZI') return;
+                    // Salta riga se la colonna B (indice 1) è esattamente "UDC+MARAZZI"
+                    if (columns[1]?.trim().toUpperCase() === 'UDC+MARAZZI') return;
 
                     if (columns.length < 5) return;
 
