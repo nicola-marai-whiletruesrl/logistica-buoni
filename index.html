@@ -172,15 +172,11 @@
 
                 const lines = inputText.split('\n').filter(line => line.trim() !== '');
                 const generatedData = [];
-                let noteIndex = -1;
 
                 lines.forEach((line, index) => {
                     const columns = line.split('\t');
 
-                    if (columns[0]?.toLowerCase().includes('data consegna') || columns[1]?.toLowerCase().includes('codice')) {
-                        noteIndex = columns.findIndex(col => col.toLowerCase().includes('particolarit'));
-                        return;
-                    }
+                    if (columns[0]?.toLowerCase().includes('data consegna') || columns[1]?.toLowerCase().includes('codice')) return;
 
                     // Salta riga se la colonna B (indice 1) è esattamente "UDC+MARAZZI"
                     if (columns[1]?.trim().toUpperCase() === 'UDC+MARAZZI') return;
@@ -193,13 +189,8 @@
                     const nrOrd = columns[3]?.trim() || '';
                     const descrizione = columns[1]?.trim() || '';
 
-                    let note = '';
-                    if (noteIndex !== -1 && columns[noteIndex]) {
-                        note = columns[noteIndex].trim();
-                    } else if (columns.length > 7 && noteIndex === -1) {
-                        // Se l'intestazione non è stata copiata, assumiamo che l'ultima colonna possa essere le note (se è oltre le 7 colonne base)
-                        note = columns[columns.length - 1].trim();
-                    }
+                    // Preleva "Particolarità consegne" direttamente dalla colonna H (Indice 7)
+                    const note = columns[7]?.trim() || '';
 
                     generatedData.push({ id: index, destinazione, nrOrd, descrizione, note });
                 });
